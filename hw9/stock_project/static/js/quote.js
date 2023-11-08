@@ -349,6 +349,7 @@ $(document).ready(function () {
         // 接收前端參數
         var start_date = $("#start_date").val();
         var symbol = $("#symbol").val();
+        var email = $('#email').val();
         var signal_numbers = [];
         $("input[type='checkbox']:checked").each(function() {
             signal_numbers.push($(this).val());
@@ -391,6 +392,7 @@ $(document).ready(function () {
         // 設定form格式儲存參數
         var supres_params = new FormData;
         supres_params.append('start_date', start_date);
+        supres_params.append('email', email);
         supres_params.append('signal_numbers', signal_numbers);
         supres_params.append('peak_left', peak_left)
         supres_params.append('peak_right', peak_right)

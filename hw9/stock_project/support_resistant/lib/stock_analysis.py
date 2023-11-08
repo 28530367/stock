@@ -8,9 +8,15 @@ import pprint
 from common.func_api_client import FuncClient
 from common.api_client import APIClient
 import yfinance as yf
+from django.conf import settings
+import os
+from .mail import MailHandler
+
 
 ac = APIClient()
 func_client = FuncClient()
+media_path = settings.MEDIA_DIRS_PATH
+
 
 def convert_timestamp_to_highchart(time_str):
     return int(time.mktime(datetime.strptime(time_str, "%Y-%m-%d").timetuple()))*1000
@@ -96,7 +102,19 @@ def flatten_dict_to_list(data, parent_key=None):
                 result.append([current_key, item[0], parent_key, item[1]])
     return result
 
+def create_local_file(data, name):
+    df_data = pd.DataFrame(data, columns=['Name', 'Date', 'Number Of Signals', 'Price'])
+    df_data = df_data[['Number Of Signals', 'Name', 'Date', 'Price']]
+
+    df_data.to_csv(f"{media_path}/{name}.csv" )
+
+    return None
+
+def remove_local_file(filename:str):
+    os.remove(f"{media_path}/{filename}.csv")
+
 def get_all_technical_analysis(
+          email,
           symbol, 
           start_date, 
           signal_numbers,
@@ -258,5 +276,20 @@ def get_all_technical_analysis(
 
     analysis_results['long_signal']=flatten_dict_to_list(res['Long'])
     analysis_results['short_signal']=flatten_dict_to_list(res['Short'])
+
+    if res != {}:
+        create_local_file(analysis_results['long_signal'], 'long_signal')
+        create_local_file(analysis_results['short_signal'], 'short_signal')
+
+        #Send mail
+        mail_odj = MailHandler()
+        send_mail = mail_odj.send(email, media_path)
+
+        if send_mail == {}:
+            print("Send email successfull")
+            remove_local_file("long_signal")
+            remove_local_file("short_signal")
+        else:
+            print("Send email failed")
 
     return analysis_results

@@ -634,6 +634,7 @@ class NecklineResSignalViewSet(viewsets.ModelViewSet):
         response.status_code = 200
         return response
     
+    
 class Find_Technical_Analysis_Signals(viewsets.ModelViewSet):
 
     queryset = None

@@ -18,6 +18,7 @@ def web(request):
 
 @csrf_exempt
 def singleSearch(request):
+    email = request.POST.get('email')
     start_date = request.POST.get('start_date')
     symbol = request.POST.get('symbol')
     signal_numbers = request.POST.get('signal_numbers').split(',')
@@ -41,6 +42,7 @@ def singleSearch(request):
     nk_value = request.POST.get('nk_value')
     
     AllData = get_all_technical_analysis(
+        email,
         symbol,
         start_date,
         signal_numbers,
@@ -66,7 +68,6 @@ def singleSearch(request):
     AllData['symbol'] = symbol
     AllData = json.dumps(AllData)
 
-    print(AllData)
     return HttpResponse(AllData)
 
 
