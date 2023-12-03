@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <meta name="viewport" content="width=device-width" /> -->
+    <title>technical analysis</title>
+
+    <!--图标样式-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/monitor.js' %}"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>    
+
+
+    <!--Datatable-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.25/datatables.min.css" />
+    <!-- <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.25/datatables.min.js"></script> -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    
+    <!--Highchart-->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/drag-panes.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="https://code.highcharts.com/css/stocktools/gui.css">
+    <link rel="stylesheet" type="text/css" href="https://code.highcharts.com/css/annotations/popup.css">
+    <script src="https://code.highcharts.com/modules/stock-tools.js"></script>
+    <script src="https://code.highcharts.com/modules/drag-panes.js"></script>
+    <script src="https://code.highcharts.com/modules/annotations-advanced.js"></script>
+    <script src="https://code.highcharts.com/modules/price-indicator.js"></script>
+    <script src="https://code.highcharts.com/modules/full-screen.js"></script>
+
+    <!--BootStrap-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+
+    <style>
+        .dataTables_wrapper .dt-buttons {
+            float: left;
+        }
+        #TrackListTable {
+            white-space: nowrap;
+        }
+        #loading-background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 90;
+        }
+        #loading-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+        }
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p id="countdown"></p>
+    </div>
+    <div id="loading-background" style="display: none;"></div>
+
+    <div align=center class="container-fluid" style="margin-top:2%;">
+        <div class="col-10 mx-auto">
+            {% comment %} SupportResistant {% endcomment %}
+    
+            <div class="card track_list" id="report-card-track_list" style="margin:0px auto;margin-top:2%;" >
+                <div class="card-header">
+                    <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Monitor Tool</b></h4>
+                </div>
+                <div class="card-body">
+                    <div class="card-body">
+                        <div class="tab-content"></div>
+                        <table id="TrackListTable" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>track date</th>
+                                    <th>symbol</th>
+                                    <th>start date</th>
+                                    <th>signal numbers</th>
+                                    <th>gap interval</th>
+                                    <th>diff</th>
+                                    <th>peak left</th>
+                                    <th>peak right</th>
+                                    <th>valley left</th>
+                                    <th>valley right</th>
+                                    <th>swap times</th>
+                                    <th>previous day</th>
+                                    <th>survival time</th>
+                                    <th>nk valley left</th>
+                                    <th>nk valley right</th>
+                                    <th>nk peak left</th>
+                                    <th>nk peak right</th>
+                                    <th>nk startdate</th>
+                                    <th>nk enddate</th>
+                                    <th>nk interval</th>
+                                    <th>nk value</th>
+                                    <th>Action</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 資料將會動態插入這裡 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade show" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-modal="true" role="dialog" style="display: block; visibility: hidden;">
+                <div class="modal-dialog  modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Result</h5>
+                            <button type="button" class="btn-close clossbutton" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div align="center" class="container-fluid" style="margin-top:2%;">
+                                <div class="col-12 mx-auto">
+                                    <div class="card report_element" id="report-card-supportresistant" style="margin:0px auto;margin-top:2%;" >
+                                        <div class="card-header">
+                                            <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Search Result</b></h4>
+                                        </div>  
+                                        <div class="card-body">
+                                            <!-- filter checkbox   -->
+                                            <div class="form-check" id="form-check">
+                                                <legend>Visualize technical analysis:</legend>
+                                                <div class="row justify-content-md-center">
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingFive">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                                                    Up Gap
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="upgap_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="upgap_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="upgap_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="upgap_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingSix">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                                                    Down Gap
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="downgap_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="downgap_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="downgap_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="downgap_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <br>
+                                                            </div>
+                                                        </div>
+                                                    </div> 
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingSev">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseSev" aria-expanded="false" aria-controls="collapseSev">
+                                                                    Volume
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseSev" class="accordion-collapse collapse" aria-labelledby="headingSev"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="volume_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="volume_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="volume_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="volume_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingEig">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseEig" aria-expanded="false" aria-controls="collapseEig">
+                                                                    Support
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseEig" class="accordion-collapse collapse" aria-labelledby="headingEig"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="support_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="support_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="support_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="support_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingNig">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseNig" aria-expanded="false" aria-controls="collapseNig">
+                                                                    Resistance
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseNig" class="accordion-collapse collapse" aria-labelledby="headingNig"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="resistance_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="resistance_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="resistance_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="resistance_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-2 mx-auto">                
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingTen">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                    data-bs-target="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+                                                                    Neckline
+                                                                </button>
+                                                            </h2>
+                                                            <div id="collapseTen" class="accordion-collapse collapse" aria-labelledby="headingTen"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    <div calss="col">
+                                                                        &nbsp&nbsp
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="neckline_inactive">
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="neckline_inactive">
+                                                                            &nbsp inactive
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <input class="form-check-input" style="font-size:10px;text-align: center"
+                                                                            type="checkbox" value="" id="neckline_active">
+                                                                        &nbsp
+                                                                        <label class="form-check-label" style=" color: #434348"
+                                                                            for="neckline_active">
+                                                                            active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <legend>Visualize signals:</legend>
+                                            <div class="row align-items-end">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-4 mx-auto">
+                                                            <div class="accordion-item">
+                                                                <h2 class="accordion-header" id="headingEle">
+                                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                        data-bs-target="#collapseEle" aria-expanded="false" aria-controls="collapseEle">
+                                                                        Long
+                                                                    </button>
+                                                                </h2>
+                                                            <div id="collapseEle" class="accordion-collapse collapse" aria-labelledby="headingEle"
+                                                                data-bs-parent="#accordionExample">
+                                                                <div class="accordion-body">
+                                                                    
+                                                                    <div id="radio-container-buy" style="display: none"></div>
+                        
+                                                                    </div>
+                                                                    <br>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                            
+                                                        <div class="col-4 mx-auto">
+                                                            <div class="accordion-item">
+                                                                <h2 class="accordion-header" id="headingTwe">
+                                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                        data-bs-target="#collapseTwe" aria-expanded="false" aria-controls="collapseTwe">
+                                                                        Short
+                                                                    </button>
+                                                                </h2>
+                                                                <div id="collapseTwe" class="accordion-collapse collapse" aria-labelledby="headingTwe"
+                                                                    data-bs-parent="#accordionExample">
+                                                                    <div class="accordion-body">
+                                                                        <div id="radio-container-sell" style="display: none"></div>
+                                                                    </div>
+                                                                        <br>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-success" id="run_strategy" style="font-size:0.8em">Run Long&Short signals </button>
+                                        <br>
+                                        <br>
+                                        <div id='container' class="mx-auto" style="height: 700px;"></div>
+                                        
+                                        </div>
+                                    </div>
+                        
+                                    <div id="view_block_long_signal">
+                                        <div class="card" id="long_signal" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Long Signals</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="card-body">
+                                                    <div class="tab-content"></div>
+                                                    <table id="long_signal_table" class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Number Of Signals</th>
+                                                                <th>Name</th>
+                                                                <th>Status</th>
+                                                                <th>Date</th>
+                                                                <th>Price</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                
+                        
+                                    <div id="view_block_short_signal">
+                                        <div class="card" id="short_signal" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Short Signals</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="card-body">
+                                                    <div class="tab-content"></div>
+                                                    <table id="short_signal_table" class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Number Of Signals</th>
+                                                                <th>Name</th>
+                                                                <th>Status</th>
+                                                                <th>Date</th>
+                                                                <th>Price</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>     
+                        
+                                    <div id="view_block_gap">
+                                        <div class="card gap_report" id="report-card-gap" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Gap</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="card-body">
+                                                    <div class="tab-content"></div>
+                                                    <table id="GapTable" class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Symbol</th>
+                                                                <th>Closing Price</th>
+                                                                <th>Gap Type</th>
+                                                                <th>Gap High</th>
+                                                                <th>Gap Low</th>
+                                                                <th>Gap Start Date</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <!-- 資料將會動態插入這裡 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <div id="view_block_volume">
+                                        <div class="card volume_report" id="report-card-volume" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Big Volume</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content"></div>
+                                                <table id="VolumeTable" class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Symbol</th>
+                                                            <th>Closing Price</th>
+                                                            <th>Volume Start Date</th>
+                                                            <th>Volume High</th>
+                                                            <th>Volume Low</th>
+                                                            <th>First crossover date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="view_block_supp_resis">
+                                        <div class="card supp_resis_report" id="report-card-supp_resis" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Support & Resistance</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content"></div>
+                                                <table id="SRTable" class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th> Symbol</th>
+                                                            <th>Closing Price</th>
+                                                            <th>SR Type</th>
+                                                            <th>Price Level</th>
+                                                            <th>Start Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="view_block_neckline">
+                                        <div class="card neckline_report" id="report-card-volume" style="margin:0px auto;margin-top:2%;" >
+                                            <div class="card-header">
+                                                <h4 style="text-align:left"><b><i class="fas fa-user-cog"></i>Neckline</b></h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content"></div>
+                                                <table id="NecklineTable" class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th> Symbol</th>
+                                                            <th>Closing Price</th>
+                                                            <th>Neckline Type</th>
+                                                            <th>Neckline Start Price</th>
+                                                            <th>Neckline Start Date</th>
+                                                            <th>Neckline Current Price</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary clossbutton" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+{% endblock %}
