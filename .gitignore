@@ -1,2 +1,11 @@
 #gmail account 
 /hw9/stock_project/media/gmail.json
+
+# Ignore all CSV files
+*.csv
+
+# Ignore all ZIP files
+*.zip
+
+# Ignore all PDF files
+*.pdf
