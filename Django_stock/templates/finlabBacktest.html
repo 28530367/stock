@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} stock {% endblock %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/finlabBacktest.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="select">
+        <div>
+            <select id="strategy" name="strategy_select">
+                <option value="1">策略1</option>
+                <option value="2">策略2</option>
+            </select>
+        </div>
+        <div>
+            <select id="mounth" name="mounth_select">
+                <option value="1">10月</option>
+                <option value="2">11月</option>
+                <option value="3">12月</option>
+            </select>
+        </div>
+    </div>
+    <div id="output"></div>
+
+    <figure class="highcharts-figure">
+        <div id="highcharts_container"></div>
+    </figure>
+</div>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script src="{% static 'js/finlabBacktest.js' %}"></script>
+
+{% endblock %}

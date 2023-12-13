@@ -1,0 +1,69 @@
+.select {
+    display: flex;
+}
+
+.select div {
+    margin-right: 10px; /* 如果需要空白間距的話，可以調整此值 */
+}
+
+select#strategy {
+    height: 30px;
+    width: 100px;
+}
+
+select#mounth {
+    height: 30px;
+    width: 100px;
+}
+
+/* datatable search樣式 */
+div.dataTables_wrapper input {
+    margin-bottom: 10px; /* 調整下邊距 */
+    padding: 5px; /* 調整內邊距 */
+    width: 200px; /* 調整寬度 */
+    border: 1px solid #ccc; /* 添加邊框 */
+    border-radius: 5px; /* 添加圓角 */
+}
+
+.highcharts-figure,
+.highcharts-data-table table {
+    min-width: 360px;
+    max-width: 1500px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}

@@ -75,9 +75,6 @@ class Ffhc(ExtractPdf):
     
     def get_rating_report_version_1(self, page):
         clip_report_version_1 = fitz.Rect(50, 165, 135, 190)
-        # pix = page.get_pixmap(clip=clip_report_version_1)
-        # pix.save('report_version_1.png')
-        
         text_report_version_1 = page.get_text(clip=clip_report_version_1, sort=True).strip()
         try:
             return text_report_version_1.split('\n')[0].strip()
@@ -86,9 +83,6 @@ class Ffhc(ExtractPdf):
 
     def get_rating_report_version_2(self, page):
         clip_report_version_2 = fitz.Rect(50, 140, 140, 200)
-        pix = page.get_pixmap(clip=clip_report_version_2)
-        pix.save('report_version_2.png')
-
         return page.get_text(clip=clip_report_version_2, sort=True).strip()
     
     def get_rating_news_version_1(self, page):
